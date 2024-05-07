@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Computer Graphics Modelin</title>
+		<style>
+			body { margin: 0; }
+            canvas {background-color: white;}
+		</style>
+	</head>
+	<body>
+        <h1 style="text-align: center;">Computer Graphics Modeling課題 05231013 古村</h1>
+    
+        <div class="description">
+            <h2>実装内容の説明</h2>
+            <pre>
+                npx vite
+            </pre>
+            でローカルホストを立ち上げる。
+            <p>three.jsを用いて、２次ベジェ曲線の実装を行なった。２次ベジェ曲線を描画するには、３個の制御点が必要である。<br>
+                従って、画面下部にあるように、3個の制御点のx,y座標をユーザが入力できるようにインターフェースを作成した。<br>
+                座標を入力してからOutputボタンをクリックすると、画面下部にベジェ曲線が描画される。<br>
+                より細かい実装について説明する。index.jsファイルでthree.jsライブラリをimportしている。その後は、scece -> camera -> rendererをオブジェクト
+                として宣言した。<br>
+                制御点の位置をユーザが対話的に変更できるようにしたかったので、button tagにイベントハンドラーを追加し、ボタンがクリックされる度にベジェ曲線が再計算されるようにした。<br>
+                <p>
+                    実際にベジェ曲線を描画するには、パラメタtをサンプリングする必要がある。それには次のようなコードで等間隔にサンプリングした。
+                    <pre>
+                        (index.js)
+                        const points = []
+                        points.push(p1);
+                        for (let t = 0; t &lt;=1; t+=0.1){
+                            const p_x = ((1 - t) ** 2) * p1x + 2 * t * (1 - t) * p2x + (t ** 2) * p3x;
+                            const p_y = ((1 - t) ** 2) * p1y + 2 * t * (1 - t) * p2y + (t ** 2) * p3y;
+                            const p = new THREE.Vector2(p_x, p_y);
+                            points.push(p);
+                        }
+                        points.push(p3);
+                    </pre>
+                </p>
+
+                <p>
+                    また、de Casteljauアルゴリズムによるベジェ曲線の描画も実装した。実装したコードは以下のようである。
+                    <pre>
+                        (index2.js)
+                        function de_castelijau(t, controls){
+                            const beta = controls;
+                            const n = 3;
+                            for (let i = 1; i &lt; n; i++){
+                                for (let j = 0; j &lt; (n - i); j++){
+                                    //vectorの成分ごとに計算する
+                                    beta[j][0] = beta[j][0] * (1 -t) + (beta[j + 1][0]) * t;
+                                    beta[j][1] = beta[j][1] * (1 -t) + (beta[j + 1][1]) * t;
+                                }
+                            }
+                            return beta[0]
+                        }
+
+                        const points = []
+                        for (let t = 0; t &lt;=1; t+=0.1){
+                            const p = de_castelijau(t, [[p1x,p1y],[p2x,p2y],[p3x,p3y]]);
+                            const p_vector = new THREE.Vector2(p[0],p[1]);
+                            points.push(p_vector);
+                        }
+                    </pre>
+                </p>
+            </p>
+
+            </p>
+
+            <h2>感想</h2>
+            <p>
+                Computer Graphicsを学ぶ以前に、そもそも初めてhtmlやjavascriptに触ったので、webサイトの制作という面でも慣れないことが多く苦労した。
+                理想的にはcanvasに描画された図で制御点の位置をカーソルで移動させることができるようにしたかったので、次回チャンスがあれば挑戦してみたい。
+            </p>
+        </div>
+
+        <h2>Input</h2>
+        <div id="points">
+            <label for="p1">Point1</label>
+            <div class="p1">
+                <input id = "p1-x" type="number" placeholder="x">
+                <input id = "p1-y" type="number" placeholder="y">
+            </div>
+
+            <label for="p2">Point2</label>
+            <div class="p2">
+                <input id = "p2-x" type="number" placeholder="x">
+                <input id = "p2-y" type="number" placeholder="y">
+            </div>
+
+            <label for="p3">Point3</label>
+            <div class="p3">
+                <input id = "p3-x" type="number" placeholder="x">
+                <input id = "p3-y" type="number" placeholder="y">
+            </div>
+        </div>
+        <button type="button">Output</button>
+        
+        <h3>等間隔にサンプリングした場合</h3>
+		<script type="module" src="/index.js"></script>
+
+        <h3>de Casteljauで計算した場合</h3>
+        <script type="module" src="/index2.js"></script>
+
+        <h2>参考文献</h2>
+        <ul>
+            <li>https://en.wikipedia.org/wiki/De_Casteljau%27s_algorithm</li>
+            <li>https://threejs.org/</li>
+            <li>https://www.jstage.jst.go.jp/article/sugaku1947/56/2/56_2_201/_pdf/-char/ja</li>
+        </ul>
+	</body>
+</html>
